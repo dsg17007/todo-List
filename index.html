@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html ng-app="myApp" >
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+<body ng-controller="todoCtrl">
+
+<h2>My Todo List</h2>
+
+<form ng-submit="todoAdd()">
+    <input type="text" ng-model="todoInput" size="50" placeholder="Add New">
+    <input type="submit" value="Add New" >
+</form>
+
+<br>
+
+<div ng-repeat="item in todoList">
+    <br><div>{{item.todoText}}</div><button ng-click="remove(item)">Done</button><button ng-click="editSelect(item)">Edit</button>
+</div>
+
+<div><input type="text" ng-model="changeText"><button ng-click="edit(item)">Save</button></div>
+<script>
+var app = angular.module('myApp', []); 
+
+app.controller('todoCtrl',['$scope','$http', function($scope,$http) {
+   
+	$scope.todoList=false;
+	$scope.todoList = [{todoText:'Do some Work..!!'}];
+    
+   
+    
+    $scope.todoAdd = function() {
+        $scope.todoList.push({todoText:$scope.todoInput});
+        $scope.todoInput = "";
+        $scope.tmp = angular.fromJson($scope.todoList);
+        $http.post('todo.json',$scope.tmp).then(function (response) {
+        	if (response.data)
+        		$scope.msg = "Task added Successfully!";
+        });
+    };
+    
+    $scope.editSelect= function(item){    	 
+    	 $scope.changeText=item.todoText;
+    	
+    }
+    $scope.edit = function(item){
+    	 item.todoText=$scope.changeText; 
+   }
+    
+    $scope.remove = function(item) { 
+    	  var index = $scope.todoList.indexOf(item);
+    	  $scope.todoList.splice(index,1);   	  
+    	  
+    	  $http.delete('todo.json',item)
+    	  .then(function (response) {
+    		  $scope.msg = "Task deleted Successfully!";
+          })
+    }
+    
+    
+    $http.get("todo.json")
+    .then(function(response) {
+        $scope.todoList = response.data;
+    });
+}]);
+     
+</script>
+
+
+</body>
+</html>
